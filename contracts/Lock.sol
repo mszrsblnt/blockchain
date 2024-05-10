@@ -31,4 +31,5 @@ contract Lock {
 
         owner.transfer(address(this).balance);
     }
+    
 }
