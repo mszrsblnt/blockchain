@@ -161,14 +161,50 @@ describe("Facility", function () {
   });
 
   describe("Exit", function () {
-    it("Should do sth", async function () {
+    it("Shouldn't allow guard on duty to exit", async function () {
       const { facility, firstGuard, secondGuard } = await loadFixture(deployFacilityFixture);
 
+      //First guard tries to exit - should be reverted
+      await facility.connect(firstGuard).requestExit();
+      await expect(facility.connect(firstGuard).approveExit(firstGuard.address)).to.be.revertedWith("Guards on duty cannot exit");
+
+      //Second guard tries to exit - should be reverted
+      await facility.connect(secondGuard).requestExit();
+      await expect(facility.connect(secondGuard).approveExit(secondGuard.address)).to.be.revertedWith("Guards on duty cannot exit");
+
+    });
+
+    it("Should allow exit when requested and approved by both guards", async function () {
+      const { facility, firstGuard, secondGuard, person1 } = await loadFixture(deployFacilityFixture);
+
+      //Request entry and approve by both guards
+      await facility.connect(person1).requestEnter();
+      await facility.connect(firstGuard).approveEnter(person1.address);
+      await facility.connect(secondGuard).approveEnter(person1.address);
+      await facility.connect(person1).doEnter();
+
+      //Request exit and approve by both guards
+      await facility.connect(person1).requestExit();
+      await facility.connect(firstGuard).approveExit(person1.address);
+      await facility.connect(secondGuard).approveExit(person1.address);
+
+      //Do exit by person1
+      await facility.connect(person1).doExit(person1.address);
+
+      //Check number of members in facility
+      expect(await facility.membersInFacilityNumber()).to.equal(2);
+
+      //Checking logs
+      const logs: string[] = await facility.getLogs();
+      // logs.forEach(element => { //DEBUGHOZ
+      //   console.log(element.toString());
+      // });
+      expect(logs.at(logs.length - 1)).to.equal("Exited: "); //TODO: itt kéne nézni ki volt a pali aki kiment
     });
   });
 
   describe("Changing guard", function () {
-    it("Should change guards", async function () {
+    it("Should change both guards", async function () {
       const { facility, firstGuard, secondGuard, newGuard1, newGuard2 } = await loadFixture(deployFacilityFixture);
 
       //Start changing guard

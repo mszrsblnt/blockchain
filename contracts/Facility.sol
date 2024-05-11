@@ -165,6 +165,7 @@ contract Facility {
         }
     }
 
+    //TODO: clean up, még így elég ronda
     function checkAcnknowledges(address _sender, address currentGuard) internal returns (bool){
         if(guardChanges[guardChangesMapping[_sender]].newGuard == _sender){
             guardChanges[guardChangesMapping[_sender]].newGuardAcknowledged = true;
