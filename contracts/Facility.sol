@@ -2,16 +2,15 @@
 pragma solidity ^0.8.0;
 
 contract Facility {
+    string[] private logs;
+    
     bool public isDoorOpen;
     address public firstGuard;
-    address public secondGuard;
-    // address[] public membersInFacility; 
-    uint public membersInFacilityNumber; //TODO: nem elég csak ez?
-    string[] public logs;
+    address public secondGuard; 
+    uint public membersInFacilityNumber;
     bool public isChangingGuard;
 
-    struct Request {
-        // address member; //nem kell, mert a requests mapping kulcsa az address
+    struct Request { 
         bool isEnter;
         bool firstGuardApproved;
         bool secondGuardApproved;
@@ -24,8 +23,7 @@ contract Facility {
         secondGuard = _secondGuard;
         isDoorOpen = false;
         isChangingGuard = false;
-        membersInFacilityNumber = 2;
-        //membersInFacility = new address[](3); 
+        membersInFacilityNumber = 2; 
     }
 
     modifier approved() {
@@ -49,12 +47,8 @@ contract Facility {
         requests[msg.sender] = Request(true, false, false);
     }
 
-    //TODO: lehet inkabb nem kene listan adni kiknek adtak, mindig max 1-nek kene engedely ki/bemenesre, kulonbden ha soknak adnak, de nem hajtják végre a doentert, de késobb igen akkor tobben is lehetnek mint 3 mert ott mar nem ellenorzunk.
-    //TODO: vagy inkabb a doEnternel kene vizsgalni hogy tele van e, jogot meg lehet adni tobb embernek is
     function approveEnter(address member) external onlyGuard {
-        require(requests[member].isEnter, "Member not waiting to enter");
-        // require(membersInFacility.length < 3, "Facility is full");
-        require(membersInFacilityNumber < 3, "Facility is full");
+        require(requests[member].isEnter, "Member not waiting to enter"); 
 
         if (msg.sender == firstGuard) {
             requests[member].firstGuardApproved = true;
@@ -64,8 +58,8 @@ contract Facility {
     }
 
     function doEnter() external approved {
-        isDoorOpen = true;
-        // membersInFacility.push(msg.sender);
+        require(membersInFacilityNumber < 3, "Facility is full");
+        isDoorOpen = true; 
         membersInFacilityNumber++;
         isDoorOpen = false;
         delete requests[msg.sender];
@@ -93,8 +87,7 @@ contract Facility {
     }
 
     function doExit(address member) external approved {
-        isDoorOpen = true;
-        // removeMember(member);
+        isDoorOpen = true; 
         membersInFacilityNumber--;
         isDoorOpen = false;
         delete requests[member];
@@ -102,31 +95,7 @@ contract Facility {
         string memory message = string(abi.encodePacked("Exited: ")); //TODO: valamiért nem működik a string(abi.encodePacked("Exited: ", member))
         logs.push(message); 
     }
-
-    //segédfüggvény, a solidity nem tud simán törölni tetszőleges egy elemet egy tömbből
-    // function removeMember(address member) private {
-    //     uint index = 0;
-    //     while (
-    //         index < membersInFacility.length &&
-    //         membersInFacility[index] != member
-    //     ) {
-    //         index++;
-    //     }
-
-    //     if (index < membersInFacility.length) {
-    //         // Move the last element into the place of the one to delete
-    //         membersInFacility[index] = membersInFacility[
-    //             membersInFacility.length - 1
-    //         ];
-    //         // Remove the last element
-    //         membersInFacility.pop();
-    //     }
-    // }
-
-    // function getMembersInFacilityNumber() external view returns (uint) {
-    //     return membersInFacility.length;
-    // }
-
+ 
     function getLogs() external view returns (string[] memory) {
         return logs;
     }
