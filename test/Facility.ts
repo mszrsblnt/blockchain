@@ -70,11 +70,12 @@ import { ethers } from "hardhat";
 
 describe("Facility", function () {
   async function deployFacilityFixture() {
-    const [owner, firstGuard, secondGuard, person1, person2] = await ethers.getSigners();
+    const [owner, firstGuard, secondGuard, person1, person2, newGuard1, newGuard2] = await ethers.getSigners(); 
+    //Lehetnének a guardok a personok is de még lehet kell nekik valami különgleges tulajdonság
 
     const Facility = await hre.ethers.getContractFactory("Facility");
     const facility = await Facility.deploy(firstGuard, secondGuard);
-    return { facility, owner, firstGuard, secondGuard, person1, person2 };
+    return { facility, owner, firstGuard, secondGuard, person1, person2, newGuard1, newGuard2};
   }
 
   describe("Deployment", function () {
@@ -164,6 +165,107 @@ describe("Facility", function () {
       const { facility, firstGuard, secondGuard } = await loadFixture(deployFacilityFixture);
 
     });
+  });
+
+  describe("Changing guard", function () {
+    it("Should change guards", async function () {
+      const { facility, firstGuard, secondGuard, newGuard1, newGuard2 } = await loadFixture(deployFacilityFixture);
+
+      //Start changing guard
+      await facility.connect(newGuard1).beginChangingGuard(newGuard1.address, newGuard2.address);
+
+      expect(await facility.isChangingGuard()).to.be.true;
+      expect(await facility.isFirstGuardChanged()).to.be.false;
+      
+      //First new guard enters
+      await facility.connect(newGuard1).requestEnter();
+      await facility.connect(firstGuard).approveEnter(newGuard1.address);
+      await facility.connect(secondGuard).approveEnter(newGuard1.address);
+      await facility.connect(newGuard1).doEnter();
+
+      //First new guard takes the shift
+      await facility.connect(newGuard1).acknowleChangeGuard();
+      await facility.connect(firstGuard).acknowleChangeGuard();
+
+      expect(await facility.firstGuard()).to.equal(newGuard1.address);
+
+      //First old guard exits and completes the fist phase
+      await facility.connect(firstGuard).requestExit();
+      await facility.connect(newGuard1).approveExit(firstGuard.address);
+      await facility.connect(secondGuard).approveExit(firstGuard.address);
+      await facility.connect(firstGuard).doExit(firstGuard.address);
+
+      expect(await facility.isFirstGuardChanged()).to.be.true;
+
+      //Second new guard enters
+      await facility.connect(newGuard2).requestEnter();
+      await facility.connect(newGuard1).approveEnter(newGuard2.address);
+      await facility.connect(secondGuard).approveEnter(newGuard2.address);
+      await facility.connect(newGuard2).doEnter();
+
+      //Second new guard takes the shift
+      await facility.connect(newGuard2).acknowleChangeGuard();
+      await facility.connect(secondGuard).acknowleChangeGuard();
+
+      expect(await facility.firstGuard()).to.equal(newGuard1.address);
+      expect(await facility.secondGuard()).to.equal(newGuard2.address);
+
+      //Second old guard exits and completes the second phase
+      await facility.connect(secondGuard).requestExit();
+      await facility.connect(newGuard1).approveExit(secondGuard.address);
+      await facility.connect(newGuard2).approveExit(secondGuard.address);
+      await facility.connect(secondGuard).doExit(secondGuard.address);
+
+      expect(await facility.isChangingGuard()).to.be.false;
+    });
+
+    it("Should not allow changing guards if the facility is full", async function () {
+      const { facility, firstGuard, secondGuard, person1, newGuard1, newGuard2 } = await loadFixture(deployFacilityFixture);
+
+      //Request an entry and approve by both guards to make the facility full
+      await facility.connect(person1).requestEnter();
+      await facility.connect(firstGuard).approveEnter(person1.address);
+      await facility.connect(secondGuard).approveEnter(person1.address);
+      await facility.connect(person1).doEnter();
+      
+      //Facility should be now full
+      expect(await facility.membersInFacilityNumber()).to.equal(3);
+
+      //Start changing guard - should be reverted
+      await expect(facility.connect(newGuard1).beginChangingGuard(newGuard1.address, newGuard2.address)).to.be.revertedWith("Facility is full");
+    });
+
+    it("Should not allow entry during changing guard", async function () {
+      const { facility, firstGuard, secondGuard, newGuard1, newGuard2, person1 } = await loadFixture(deployFacilityFixture);
+
+      //Person1 gets approval to enter
+      await facility.connect(person1).requestEnter();
+      await facility.connect(firstGuard).approveEnter(person1.address);
+      await facility.connect(secondGuard).approveEnter(person1.address);
+
+      //Start changing guard
+      await facility.connect(newGuard1).beginChangingGuard(newGuard1.address, newGuard2.address);
+
+      //First new guard enters
+      await facility.connect(newGuard1).requestEnter();
+      await facility.connect(firstGuard).approveEnter(newGuard1.address);
+      await facility.connect(secondGuard).approveEnter(newGuard1.address);
+      await facility.connect(newGuard1).doEnter();
+
+      //First new guard takes the shift
+      await facility.connect(newGuard1).acknowleChangeGuard();
+      await facility.connect(firstGuard).acknowleChangeGuard();
+
+      //First old guard exits and completes the fist phase
+      await facility.connect(firstGuard).requestExit();
+      await facility.connect(newGuard1).approveExit(firstGuard.address);
+      await facility.connect(secondGuard).approveExit(firstGuard.address);
+      await facility.connect(firstGuard).doExit(firstGuard.address);
+
+      //Person1 entry should be reverted because the facility is changing guard
+      await expect(facility.connect(person1).doEnter()).to.be.revertedWith("Only new guards can enter during guard change");
+    });
+
   });
  
 });
