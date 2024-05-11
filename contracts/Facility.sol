@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 contract Facility {
     string[] private logs;
-    
+
     bool public isDoorOpen;
     address public firstGuard;
     address public secondGuard; 
@@ -52,7 +52,7 @@ contract Facility {
 
         if (msg.sender == firstGuard) {
             requests[member].firstGuardApproved = true;
-        } else {
+        } else if(msg.sender == secondGuard) {
             requests[member].secondGuardApproved = true;
         }
     }

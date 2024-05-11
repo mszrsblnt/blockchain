@@ -70,17 +70,18 @@ import { ethers } from "hardhat";
 
 describe("Facility", function () {
   async function deployFacilityFixture() {
-    const [owner, firstGuard, secondGuard, somebody] = await ethers.getSigners();
+    const [owner, firstGuard, secondGuard, person1, person2] = await ethers.getSigners();
 
     const Facility = await hre.ethers.getContractFactory("Facility");
     const facility = await Facility.deploy(firstGuard, secondGuard);
-    return { facility, owner, firstGuard, secondGuard, somebody };
+    return { facility, owner, firstGuard, secondGuard, person1, person2 };
   }
 
   describe("Deployment", function () {
     it("Should set the correct initial values", async function () {
       const { facility, owner, firstGuard, secondGuard } = await loadFixture(deployFacilityFixture);
 
+      //Check initial values
       expect(await facility.isDoorOpen()).to.be.false;
       expect(await facility.firstGuard()).to.equal(firstGuard.address);
       expect(await facility.secondGuard()).to.equal(secondGuard.address);
@@ -90,50 +91,79 @@ describe("Facility", function () {
 
   describe("Entry", function () {
     it("Should allow entry when requested and approved by both guards", async function () {
-      const { facility, firstGuard, secondGuard, somebody } = await loadFixture(deployFacilityFixture);
+      const { facility, firstGuard, secondGuard, person1 } = await loadFixture(deployFacilityFixture);
 
-      await facility.connect(somebody).requestEnter();
-
-      await facility.connect(firstGuard).approveEnter(somebody.address);
-      expect((await facility.requests(somebody)).firstGuardApproved).to.equal(true);
-
-      await facility.connect(secondGuard).approveEnter(somebody.address);
-      expect((await facility.requests(somebody)).secondGuardApproved).to.equal(true);
-
-      await facility.connect(somebody).doEnter();
-      expect(await facility.membersInFacilityNumber()).to.equal(3);
+      //Request entry and approve by both guards
+      await facility.connect(person1).requestEnter();
+      await facility.connect(firstGuard).approveEnter(person1.address);
+      await facility.connect(secondGuard).approveEnter(person1.address);
       
+      //Check if the request was approved by both guards
+      expect((await facility.requests(person1)).firstGuardApproved).to.equal(true);
+      expect((await facility.requests(person1)).secondGuardApproved).to.equal(true);
+
+      //Do entry by person1
+      await facility.connect(person1).doEnter();
+
+      //Check number of members in facility and requests should be empty after successful entry
+      expect(await facility.membersInFacilityNumber()).to.equal(3);
+      expect((await facility.requests(person1)).firstGuardApproved).to.equal(false);
+      expect((await facility.requests(person1)).secondGuardApproved).to.equal(false);
+
+      //Checking logs
       const logs: string[] = await facility.getLogs();
       // logs.forEach(element => { //DEBUGHOZ
       //   console.log(element.toString());
       // });
-      expect(logs.at(logs.length-1)).to.equal("Entered: "); //TODO: itt kéne nézni ki volt a pali aki bement
+      expect(logs.at(logs.length - 1)).to.equal("Entered: "); //TODO: itt kéne nézni ki volt a pali aki bement
 
     });
-    
-    //TODO: alabbiakat nem csinaltam még
 
     it("Should not allow entry without approval from both guards", async function () {
-      const { facility, firstGuard } = await loadFixture(deployFacilityFixture);
+      const { facility, firstGuard, secondGuard, person1 } = await loadFixture(deployFacilityFixture);
 
-      await facility.requestEnter();
-      await facility.approveEnter(firstGuard.address);
-  
+      //Request entry and approve by only one guard
+      await facility.connect(person1).requestEnter();
+      await facility.connect(firstGuard).approveEnter(person1.address);
+
+      //Check if the request was approved by only one guard
+      expect((await facility.requests(person1)).firstGuardApproved).to.equal(true);
+      expect((await facility.requests(person1)).secondGuardApproved).to.equal(false);
+ 
+      //Do entry by person1 - should be reverted
+      await expect(facility.connect(person1).doEnter()).to.be.revertedWith("Both guards must approve");
     });
 
     it("Should not allow entry if the facility is full", async function () {
-      const { facility, firstGuard, secondGuard } = await loadFixture(deployFacilityFixture);
+      const { facility, firstGuard, secondGuard, person1, person2 } = await loadFixture(deployFacilityFixture);
 
-      await facility.requestEnter();
-      await facility.approveEnter(firstGuard.address);
-      await facility.approveEnter(secondGuard.address);
+      //Request an entry and approve by both guards to make the facility full
+      await facility.connect(person1).requestEnter();
+      await facility.connect(firstGuard).approveEnter(person1.address);
+      await facility.connect(secondGuard).approveEnter(person1.address);
+      await facility.connect(person1).doEnter();
+      
+      //Facility should be now full
+      expect(await facility.membersInFacilityNumber()).to.equal(3);
 
-      await facility.requestEnter();
-
-      // expect(await facility.membersInFacility(0)).to.have.lengthOf(2);
-      expect(await facility.isDoorOpen()).to.be.false;
+      //Request entry for the person2 and approve by both guards
+      await facility.connect(person2).requestEnter();
+      await facility.connect(firstGuard).approveEnter(person2.address);
+      await facility.connect(secondGuard).approveEnter(person2.address);
+      
+      //Person2 entry should be reverted because the facility is full
+      await expect(facility.connect(person2).doEnter()).to.be.revertedWith("Facility is full");
+  
+      //Facility should still be full with 3 members
+      expect(await facility.membersInFacilityNumber()).to.equal(3);
     });
   });
 
-  // Add more test cases for exit, guard change, etc.
+  describe("Exit", function () {
+    it("Should do sth", async function () {
+      const { facility, firstGuard, secondGuard } = await loadFixture(deployFacilityFixture);
+
+    });
+  });
+ 
 });
