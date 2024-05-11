@@ -116,7 +116,7 @@ describe("Facility", function () {
       // logs.forEach(element => { //DEBUGHOZ
       //   console.log(element.toString());
       // });
-      expect(logs.at(logs.length - 1)).to.equal("Entered: "); //TODO: itt kéne nézni ki volt a pali aki bement
+      expect(logs.at(logs.length - 1)).to.equal(`Entered: ${person1.address.toLowerCase()}`); //Azért kell lower, mert a logban az address kisbetűs itt meg nagy lenne   
 
     });
 
@@ -199,7 +199,7 @@ describe("Facility", function () {
       // logs.forEach(element => { //DEBUGHOZ
       //   console.log(element.toString());
       // });
-      expect(logs.at(logs.length - 1)).to.equal("Exited: "); //TODO: itt kéne nézni ki volt a pali aki kiment
+      expect(logs.at(logs.length - 1)).to.equal(`Exited: ${person1.address.toLowerCase()}`); //TODO: itt kéne nézni ki volt a pali aki kiment    
     });
   });
 

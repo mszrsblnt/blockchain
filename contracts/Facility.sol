@@ -89,7 +89,7 @@ contract Facility {
         isDoorOpen = false;
         delete requests[msg.sender];
         
-        string memory message = string(abi.encodePacked("Entered: "));  //TODO: valamiért nem működik a string(abi.encodePacked("Entered: ", member))
+        string memory message =string.concat("Entered: ", toAsciiString(msg.sender));  //TODO: valamiért nem működik a string(abi.encodePacked("Entered: ", member))
         logs.push(message); 
     }
 
@@ -117,7 +117,7 @@ contract Facility {
         membersInFacilityNumber--;
         isDoorOpen = false;
         delete requests[member];
-        string memory message = string(abi.encodePacked("Exited: ")); //TODO: valamiért nem működik a string(abi.encodePacked("Exited: ", member))
+        string memory message = string.concat("Exited: ", toAsciiString(member)); //TODO: valamiért nem működik a string(abi.encodePacked("Exited: ", member))
 
         if(isChangingGuard){
             if(!isFirstGuardChanged){
@@ -165,7 +165,7 @@ contract Facility {
         }
     }
 
-    //TODO: clean up, még így elég ronda
+    //TODO: clean up, még így elég ronda. Igaz nem tudom, hogy lehetne szebben XD
     function checkAcnknowledges(address _sender, address currentGuard) internal returns (bool){
         if(guardChanges[guardChangesMapping[_sender]].newGuard == _sender){
             guardChanges[guardChangesMapping[_sender]].newGuardAcknowledged = true;
@@ -178,6 +178,24 @@ contract Facility {
         } else {
             return false;
         }
+    }
+
+    //Az alábbi két segédfüggvény forrása: https://ethereum.stackexchange.com/questions/8346/convert-address-to-string
+    function toAsciiString(address x) internal pure returns (string memory) {
+        bytes memory s = new bytes(40);
+        for (uint i = 0; i < 20; i++) {
+            bytes1 b = bytes1(uint8(uint(uint160(x)) / (2**(8*(19 - i)))));
+            bytes1 hi = bytes1(uint8(b) / 16);
+            bytes1 lo = bytes1(uint8(b) - 16 * uint8(hi));
+            s[2*i] = char(hi);
+            s[2*i+1] = char(lo);            
+        }
+        return string.concat("0x",string(s));
+    }
+
+    function char(bytes1 b) internal pure returns (bytes1 c) {
+        if (uint8(b) < 10) return bytes1(uint8(b) + 0x30);
+        else return bytes1(uint8(b) + 0x57);
     }
 
 }
