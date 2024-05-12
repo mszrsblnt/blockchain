@@ -86,11 +86,9 @@ function approveExit(address member) external onlyGuard
 #### Kilépés végrehajtása (`doExit`)
 
 ```solidity
-function doExit(address member) external approved onlyMembersInside
+function doExit() external approved onlyMembersInside
 ```
 
-- Paraméter:
-  - `member`: A kilépő tag címe.
 - Feladat:
   - Végrehajtja a kilépést, ha a tag bent van, és mindkét őr jóváhagyta.
   - Naplózza a kilépést.

@@ -147,7 +147,7 @@ contract Facility {
     }
 
     //Kilépés végrehajtása, ha az ember bent van és mindkét őr jóváhagyta
-    function doExit(address member) external approved onlyMembersInside {
+    function doExit() external approved onlyMembersInside {
         if (isChangingGuard) {
             require(
                 getGuardChange(msg.sender).newGuard != msg.sender,
@@ -157,12 +157,12 @@ contract Facility {
 
         isDoorOpen = true;
         emit DoorOpened();
-        removeFromMembersInside(member);
+        removeFromMembersInside(msg.sender);
         isDoorOpen = false;
-        delete requests[member];
+        delete requests[msg.sender];
         string memory message = string.concat(
             "Exited: ",
-            toAsciiString(member)
+            toAsciiString(msg.sender)
         );
 
         if (isChangingGuard) {
