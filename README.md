@@ -1,15 +1,14 @@
 ## Blockchain - HF2 L(a)unch Codes
 
-<!-- TODO: szöveget átnéz -->
 ### Feladatleírás
-A magas biztonsági létesítmény mindig két katona váltását biztosítja. Rendszeres hozzáférést kell biztosítania alacsony biztonsági szintű személyzetnek (ételkiszállítás, takarítás stb.). Az összes belépés és kilépés nyomon van követve és engedélyezve van egy elosztott könyvelési rendszer által (egy manipulációálló elektronikus zár a főbejáraton folyamatosan figyeli a könyvelést, és eldönti, hogy nyitva vagy zárva kell-e lennie; kérések és engedélyezések okos kártyákkal és elektronikus terminálokkal támogatottak).
+Egy magas biztonsági létesítmény mindig két katonát igényel egy műszakban. Emellett rendszeres hozzáférést kell biztosítania alacsony biztonsági szintű engedélyekkel rendelkező személyeknek (ételkiszállítás, takarítás stb.). Az összes belépést és kilépést nyomon kell követni és engedélyezni egy elosztott könyvelési rendszer által (a főbejáraton egy elektronikus zár folyamatosan figyeli a könyvet és eldönti, hogy nyitva vagy zárva kell-e lennie; kérések és engedélyezések okos kártyákkal és elektronikus terminálokkal támogatottak).
 
-1. A belépést kívülről kérni kell, és mindkét ügyeletes katona jóvá kell hagyja.
-2. A sikeres belépést belsőleg naplózni kell az belépő fél által (miután az ajtót bezárták).
+1. A belépést kívülről kérni kell, és mindkét ügyeletes katonának jóvá kell hagyja.
+2. A sikeres belépést belsőleg naplózni kell a belépő fél által (miután az ajtót bezárták).
 3. A kilépés protokollja ugyanez visszafelé.
 4. A váltások két fázisban történnek (először, katona1 kiváltja katona1-et egy teljes belépés-kilépési ciklusban, majd katona2 követi ugyanezt).
-5. Az őrszolgálatot kölcsönös "elismerés" által adhatják át a két érintett katona.
-6. Ne legyen több, mint három személy a létesítményben bármikor.
+5. Az őrszolgálatot kölcsönös "elismerés" által adhatja át a két érintett katona.
+6. Ne legyen több, mint három személy a létesítményben egyszerre.
 7. A váltás akkor következik be, amikor a létesítmény üres, és nem engedélyezett a belépés, amíg ez be nem fejeződik.
 8. Az őrök nem léphetnek be vagy léphetnek ki a létesítményből őrszolgálatban.
 
