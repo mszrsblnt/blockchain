@@ -129,8 +129,9 @@ describe("Facility", function () {
       //Do exit by person1
       await facility.connect(person1).doExit(person1.address);
 
-      //Facility should not be full 
+      //Facility should not be full and person1 should not be inside
       expect(await facility.isFacilityFull()).to.be.false;
+      expect(await facility.checkIfMemberIsInside(person1.address)).to.be.false;
 
       //Checking logs
       const logs: string[] = await facility.getLogs();
