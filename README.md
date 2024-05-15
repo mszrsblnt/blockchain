@@ -1,14 +1,14 @@
 ## Blockchain - HF2 L(a)unch Codes
 
 ### Feladatleírás
-A magas biztonsági létesítmény mindig két katona váltását biztosítja. Rendszeres hozzáférést kell biztosítania alacsony biztonsági szintű személyzetnek (ételkiszállítás, takarítás stb.). Az összes belépés és kilépés nyomon van követve és engedélyezve van egy elosztott könyvelési rendszer által (egy manipulációálló elektronikus zár a főbejáraton folyamatosan figyeli a könyvelést, és eldönti, hogy nyitva vagy zárva kell-e lennie; kérések és engedélyezések okos kártyákkal és elektronikus terminálokkal támogatottak).
+Egy magas biztonsági létesítmény mindig két katonát igényel egy műszakban. Emellett rendszeres hozzáférést kell biztosítania alacsony biztonsági szintű engedélyekkel rendelkező személyeknek (ételkiszállítás, takarítás stb.). Az összes belépést és kilépést nyomon kell követni és engedélyezni egy elosztott könyvelési rendszer által (a főbejáraton egy elektronikus zár folyamatosan figyeli a könyvet és eldönti, hogy nyitva vagy zárva kell-e lennie; kérések és engedélyezések okos kártyákkal és elektronikus terminálokkal támogatottak).
 
-1. A belépést kívülről kérni kell, és mindkét ügyeletes katona jóvá kell hagyja.
-2. A sikeres belépést belsőleg naplózni kell az belépő fél által (miután az ajtót bezárták).
+1. A belépést kívülről kérni kell, és mindkét ügyeletes katonának jóvá kell hagyja.
+2. A sikeres belépést belsőleg naplózni kell a belépő fél által (miután az ajtót bezárták).
 3. A kilépés protokollja ugyanez visszafelé.
 4. A váltások két fázisban történnek (először, katona1 kiváltja katona1-et egy teljes belépés-kilépési ciklusban, majd katona2 követi ugyanezt).
-5. Az őrszolgálatot kölcsönös "elismerés" által adhatják át a két érintett katona.
-6. Ne legyen több, mint három személy a létesítményben bármikor.
+5. Az őrszolgálatot kölcsönös "elismerés" által adhatja át a két érintett katona.
+6. Ne legyen több, mint három személy a létesítményben egyszerre.
 7. A váltás akkor következik be, amikor a létesítmény üres, és nem engedélyezett a belépés, amíg ez be nem fejeződik.
 8. Az őrök nem léphetnek be vagy léphetnek ki a létesítményből őrszolgálatban.
 
@@ -18,6 +18,7 @@ A magas biztonsági létesítmény mindig két katona váltását biztosítja. R
 - Mészáros Bálint [B3SWVC]
 
 
+<<<<<<< HEAD
 ### Tervezési döntések
 A tervezés során az alábbi döntéseket hoztuk meg:
 
@@ -68,6 +69,9 @@ A smart contract az alábbi adatmodellt használja:
 13.  `mapping(address => Request) public requests;`: Ez egy nyilvános mapping, amely a kérelmeket tárolja az adott címhez rendelve.
 
 ### Függvények - API
+=======
+### Függvények
+>>>>>>> bb73c7210d74a9fc35171f5a3b60431b20b85c75
 
 #### Konstruktor (`constructor`)
 
@@ -89,7 +93,7 @@ function requestEnter() external onlyMembersOutside
 ```
 
 - Feladat:
-  - Hozzáadja a küldőt a belépési kéréslistához.
+  - Hozzáadja a küldőt a belépésikéréslistához.
 
 #### Belépés jóváhagyása (`approveEnter`)
 
@@ -109,7 +113,7 @@ function doEnter() external approved onlyMembersOutside
 ```
 
 - Feladat:
-  - Engedélyezi a belépést, ha a kérelmet beküldő tag bent van, és mindkét őr jóváhagyta.
+  - Végrahajtja a belépést, ha a kérelmet beküldő tag bent van, és mindkét őr jóváhagyta.
   - Naplózza a belépést.
   - DoorOpen eventet küld.
 
@@ -120,7 +124,7 @@ function requestExit() external onlyMembersInside
 ```
 
 - Feladat:
-  - Hozzáadja a küldőt a kilépési kéréslistához.
+  - Hozzáadja a küldőt a kilépésikéréslistához.
 
 #### Kilépés jóváhagyása (`approveExit`)
 
@@ -136,13 +140,11 @@ function approveExit(address member) external onlyGuard
 #### Kilépés végrehajtása (`doExit`)
 
 ```solidity
-function doExit(address member) external approved onlyMembersInside
+function doExit() external approved onlyMembersInside
 ```
 
-- Paraméter:
-  - `member`: A kilépő tag címe.
 - Feladat:
-  - Engedélyezi a kilépést, ha a tag bent van, és mindkét őr jóváhagyta.
+  - Végrehajtja a kilépést, ha a tag bent van, és mindkét őr jóváhagyta.
   - Naplózza a kilépést.
   - DoorOpen eventet küld.
 
@@ -156,7 +158,7 @@ function beginChangingGuard(address _newGuard1, address _newGuard2) external onl
   - `_newGuard1`: Az első új őr címe.
   - `_newGuard2`: A második új őr címe.
 - Feladat:
-  - Kezdeményezi az őrváltást, és beállítja az új őröket.
+  - Kezdeményezi az őrváltást.
 
 #### Őrváltás elismerése (`acknowleChangeGuard`)
 
@@ -167,6 +169,20 @@ function acknowleChangeGuard() external
 - Feladat:
   - Az őrség átadása azzal, hogy a két őr kölcsönösen elismeri a váltást.
 
+#### Elismerések ellenőrzése(`checkAcnknowledges`)
+
+```solidity
+checkAcnknowledges(address _sender, address currentGuard) internal returns (bool)
+```
+
+- Paraméterek:
+  - `_sender`: Az elismerés hívója.
+  - `_currentGuard`: Az őr, akit éppen lecserélnek.
+- Feladat:
+  - Ellenőrzi, hogy elismerték-e az átadást az őrök.
+- Visszatétési érték:
+  - Elfogadta-e mindtkét őr az átadást
+
 #### Logok lekérdezése (`getLogs`)
 
 ```solidity
@@ -175,6 +191,8 @@ function getLogs() external view returns (string[] memory)
 
 - Feladat:
   - Visszaadja az összes naplóbejegyzést.
+- Visszatérési érték:
+  - Logok string tömbként
 
 #### Tele van-e a létesítmény? (`isFacilityFull`)
 
@@ -184,76 +202,99 @@ function isFacilityFull() external view returns (bool)
 
 - Feladat:
   - Ellenőrzi, hogy a létesítmény tele van-e.
+- Visszatérési érték:
+  - Tele van-e a létesítmény
 
-### Függvények Paraméterei és Kimenetei
+#### Őrváltás lekérdezése (`getGuardChange`)
 
-#### Paraméterek
+```solidity
+function getGuardChange(address _sender) private view returns (GuardChange storage) 
+```
 
-- `member`: Az azonosítója az adott tagnak, aki valamilyen műveletet kezdeményez a létesítményben.
-- `_newGuard1`, `_newGuard2`: Az új őrök címei, akik be fognak lépni az őrszolgálatba.
+- Paraméterek:
+  - `_sender`: Azonosító, amihez a tartozó örváltási adataokat lekérjük.
+- Feladat:
+  - Az őrváltás adatainak lekérdezése.
+- Visszatérési érték
+  - Az őrváltás adatai
 
-#### Kimenete
+#### Tag bentlétének ellenőrzése (`checkIfMemberIsInside`) 
 
-- `approved`: Logikai érték, amely jelzi, hogy mindkét őr jóváhagyta-e a műveletet.
-- `isFacilityFull`: Logikai érték, amely jelzi, hogy a létesítmény tele van-e.
-- `logs`: Egy tömb, amely tartalmazza az összes naplóbejegyzést.
+```solidity
+function checkIfMemberIsInside(address member) public view returns (bool)
+```
+
+- Paraméterek:
+  - `member`: Tag, akit ellenőrzünk.
+- Feladat:
+  - Visszaadja, hogy a tag bent van-e a létsítményben.
+- Visszatérési érték:
+  - A tag bent van-e
+
+#### Cím ASCII sztringé alakítása (`toAsciiString`) 
+
+```solidity
+function toAsciiString(address x) internal pure returns (string memory)
+```
+
+A függvény forrása: https://ethereum.stackexchange.com/questions/8346/convert-address-to-string
+
+- Paraméterek:
+  - `x`: Cím, amit átalkít a függvény
+- Feladat:
+  - Átalakítja a címet.
+- Visszatérési érték:
+  - Az átkonvertált cím
+
+
+#### Karakter konverzió (`char`)
+
+```solidity
+function char(bytes1 b) internal pure returns (bytes1 c)
+```
+
+ függvény forrása: https://ethereum.stackexchange.com/questions/8346/convert-address-to-string
+
+- Paraméterek:
+  - `b`: Az átalakítandó `bytes1` típusú bájt
+- Feladat:
+  - Az `b` bájt átalakítása megfelelő ASCII karakterré.
+- Visszatérési érték:
+  - Az átalakított ASCII karakter `bytes1` típusban.
 
 ### Modifierek
 
-A smart contract-ban több modifiert is használnak, amelyek meghatározzák, hogy mely függvények hívhatóak meg és milyen feltételeknek kell teljesülniük.
-
-#### `approved`
+#### Engedélyezve (`approved`)
 
 ```solidity
-modifier approved() {
-    require(
-        requests[msg.sender].firstGuardApproved &&
-            requests[msg.sender].secondGuardApproved,
-        "Mindkét őrnek jóvá kell hagynia"
-    );
-    _;
-}
+modifier approved()
 ```
 
 - Feladat:
   - Ellenőrzi, hogy az adott műveletet kezdeményező tagnak mindkét őr jóváhagyta-e a műveletet.
 
-#### `onlyGuard`
+#### Csak őrők (`onlyGuard`)
 
 ```solidity
-modifier onlyGuard() {
-    require(
-        msg.sender == firstGuard || msg.sender == secondGuard,
-        "Csak az őrök hívhatják meg ezt a funkciót"
-    );
-    _;
-}
+modifier onlyGuard()
 ```
 
 - Feladat:
   - Ellenőrzi, hogy csak az őrök hívhatják-e meg a modifikált függvényt.
 
-#### `onlyMembersInside`
+#### Csak bent lévők (`onlyMembersInside`)
 
 ```solidity
-modifier onlyMembersInside() {
-    bool isInside = checkIfMemberIsInside(msg.sender);
-    require(isInside, "Csak a bentlévő tagok hívhatják meg ezt a funkciót");
-    _;
-}
+modifier onlyMembersInside()
 ```
 
 - Feladat:
   - Ellenőrzi, hogy csak azok a tagok hívhatják-e meg a modifikált függvényt, akik a létesítményben vannak.
 
-#### `onlyMembersOutside`
+#### Csak kint lévők (`onlyMembersOutside`)
 
 ```solidity
-modifier onlyMembersOutside() {
-    bool isInside = checkIfMemberIsInside(msg.sender);
-    require(!isInside, "Csak a kintlévő tagok hívhatják meg ezt a funkciót");
-    _;
-}
+modifier onlyMembersOutside()
 ```
 
 - Feladat:
@@ -261,12 +302,15 @@ modifier onlyMembersOutside() {
 
 ### Tesztek
 
+<<<<<<< HEAD
 A smart contract-hez számos tesztet írtak, amelyek lefedik a különböző működési lehetőségeket és körülményeket. Ezeket a teszteket TypeScipt nyelven írtuk meg.
 
+=======
+>>>>>>> bb73c7210d74a9fc35171f5a3b60431b20b85c75
 #### Deployment
 
-1. **Should set the correct initial values**
-   - Leírás: Ellenőrzi, hogy a létrehozás során a kezdeti értékek helyesen kerültek-e beállításra.
+1. **Helyes kezdőértékek beállítása**
+   - Leírás: Ellenőrzi, hogy a telepítés során a megfelelő kezdőértékek kerültek-e beállításra.
    - Elvárt viselkedés:
      - Az ajtó kezdetben zárva van.
      - Az első és második őr címei megfelelően vannak beállítva.
@@ -274,63 +318,64 @@ A smart contract-hez számos tesztet írtak, amelyek lefedik a különböző mű
 
 #### Belépés
 
-1. **Should allow entry when requested and approved by both guards**
+1. **Belépés engedélyezése kérésre és mindkét őr jóváhagyása esetén**
    - Leírás: Ellenőrzi, hogy a belépés megengedett-e, amikor azt az összes őr jóváhagyta.
    - Elvárt viselkedés:
-     - Az őrök mindkét jóváhagyása után a tag sikeresen beléphet.
+     - Az összes őr jóváhagyása után a tag sikeresen beléphet.
      - Az adott tag belépése sikeres volt, és az őrzők jóváhagyása után a belépési kérelmek törlődnek.
-     - A naplóban rögzítésre kerül a belépési esemény.
+     - A belépési esemény rögzítésre kerül a naplóban.
 
-2. **Should not allow entry without approval from both guards**
+2. **Belépés megtagadása mindkét őr jóváhagyása nélkül**
    - Leírás: Ellenőrzi, hogy a belépés megtagadódik-e, ha legalább az egyik őr nem jóváhagyta.
    - Elvárt viselkedés:
      - Ha legalább az egyik őr nem hagyta jóvá a belépést, a belépési kísérlet visszautasításra kerül.
 
-3. **Should not allow entry if the facility is full**
+3. **Belépés megtagadása, ha a létesítmény tele van**
    - Leírás: Ellenőrzi, hogy a belépés megtagadódik-e, ha a létesítmény tele van.
    - Elvárt viselkedés:
      - Ha a létesítmény megtelt, a belépési kísérlet visszautasításra kerül.
 
 #### Kilépés
 
-1. **Should not allow guard on duty to exit**
-   - Leírás: Ellenőrzi, hogy az őröket a szolgálatban tartózkodásuk során történő kilépés megtagadódik-e.
+1. **Szolgálatban lévő őr kilépésének megtagadása**
+   - Leírás: Ellenőrzi, hogy az őrök a szolgálatban tartózkodásuk során történő kilépése megtagadódik-e.
    - Elvárt viselkedés:
      - Az őröknek nem szabad kilépniük, amikor őrszolgálatban vannak.
 
-2. **Should allow exit when requested and approved by both guards**
+2. **Kilépés engedélyezése kérésre és mindkét őr jóváhagyása esetén**
    - Leírás: Ellenőrzi, hogy a kilépés megengedett-e, amikor azt az összes őr jóváhagyta.
    - Elvárt viselkedés:
-     - Az őrök mindkét jóváhagyása után a tag sikeresen kiléphet.
+     - Az összes őr jóváhagyása után a tag sikeresen kiléphet.
      - Az adott tag kilépése sikeres volt, és az őrzők jóváhagyása után a kilépési kérelmek törlődnek.
-     - A naplóban rögzítésre kerül a kilépési esemény.
+     - A kilépési esemény rögzítésre kerül a naplóban.
 
-3. **Should not allow exit when not approved by both guards**
-   - Leírás: Ellenőrzi, hogy a kilépés megtagadódik-e, ha legalább az egyik őr nem jóváhagyta.
+3. **Kilépés megtagadása, ha nem nem lett jóváhagyva mindkét őr által**
+   - Leírás: Ellenőrzi, hogy a kilépés megtagadódik-e, ha legalább az egyik őr nem hagyta jóvá.
    - Elvárt viselkedés:
      - Ha legalább az egyik őr nem hagyta jóvá a kilépést, a kilépési kísérlet visszautasításra kerül.
 
 #### Őrváltás
 
-1. **Should change both guards**
+1. **Mindkét őr cseréje**
    - Leírás: Ellenőrzi, hogy az őrváltás sikeresen megtörténik-e.
    - Elvárt viselkedés:
      - Az új őrök belépnek és átveszik az őrszolgálatot, miközben az előző őrök kilépnek.
-     - Az őrváltás folyamata során a megfelelő naplóbejegyzések történnek.
+     - Őrváltás alatt a megfelelő naplóbejegyzések történnek.
 
-2. **Should not allow changing guards if the facility is full**
+2. **Az őrváltás megtagadása, ha a létesítmény tele van**
    - Leírás: Ellenőrzi, hogy az őrváltás megtagadódik-e, ha a létesítmény tele van.
    - Elvárt viselkedés:
      - Ha a létesítmény megtelt, az őrváltás megtagadódik.
 
-3. **Should not allow entry during changing guard**
+3. **Belépés megtagadása az őrváltás idején**
    - Leírás: Ellenőrzi, hogy az őrváltás alatt a belépés megtagadódik-e.
    - Elvárt viselkedés:
-     - Az őrváltás folyamatában a belépési kísérlet visszautasításra kerül.
+     - Őrváltás alatt a belépési kísérlet visszautasításra kerül.
 
-4. **Should only guard on duty begin changing guard**
+4. **Csak szolgálatban levő őr kezdeményezhet őrváltást**
    - Leírás: Ellenőrzi, hogy csak az őrök kezdeményezhetik-e az őrváltást.
    - Elvárt viselkedés:
+<<<<<<< HEAD
      - Az őrváltás csak az őrszolgálatban levő őrök által kezdeményezhető.
 
 ### Útmutató a tesztek futtatásához
@@ -343,3 +388,6 @@ A smart contract-hez számos tesztet írtak, amelyek lefedik a különböző mű
     - Az **'npx hardhat compile'** parancs segítségével építse fel a szerződést. 
     - Futtassa a teszteket a **'npx hardhat test'** paranccsal.
     - Ellenőrizze a tesztek kimenetét és bizonyosodjon meg róla, hogy minden teszteset sikeresen lefutott.
+=======
+     - Őrváltás csak az őrszolgálatban levő őrök által kezdeményezhető.
+>>>>>>> bb73c7210d74a9fc35171f5a3b60431b20b85c75

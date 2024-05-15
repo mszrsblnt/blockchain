@@ -7,12 +7,23 @@ import { expect } from "chai";
 import hre from "hardhat";
 import { ethers } from "hardhat";
 
+
 describe("Facility", function () {
+  let dooropenedCounter: number = 0;
+
+  function handleDoorOpened() { 
+    dooropenedCounter = dooropenedCounter + 1; 
+  }
+
   async function deployFacilityFixture() {
     const [firstGuard, secondGuard, person1, person2, newGuard1, newGuard2] = await ethers.getSigners();
 
     const Facility = await hre.ethers.getContractFactory("Facility");
     const facility = await Facility.deploy(firstGuard, secondGuard);
+
+    //Add event listener for door opened
+    facility.addListener("DoorOpened", handleDoorOpened);
+
     return { facility, firstGuard, secondGuard, person1, person2, newGuard1, newGuard2 };
   }
 
@@ -41,9 +52,10 @@ describe("Facility", function () {
       expect((await facility.requests(person1)).firstGuardApproved).to.equal(true);
       expect((await facility.requests(person1)).secondGuardApproved).to.equal(true);
 
-      //Do entry by person1
-      await facility.connect(person1).doEnter();
-
+      //Do entry by person1 - expect DoorOpened event
+      await expect(facility.connect(person1).doEnter())
+        .to.emit(facility, "DoorOpened");
+ 
       //Check number of members in facility and requests should be empty after successful entry
       expect(await facility.checkIfMemberIsInside(person1.address)).to.be.true;
       expect((await facility.requests(person1)).firstGuardApproved).to.equal(false);
@@ -52,7 +64,6 @@ describe("Facility", function () {
       //Checking logs
       const logs: string[] = await facility.getLogs();
       expect(logs.at(logs.length - 1)).to.equal(`Entered: ${person1.address.toLowerCase()}`); //Azért kell lower, mert a logban az address kisbetűs itt meg nagy lenne   
-
     });
 
     it("Should not allow entry without approval from both guards", async function () {
@@ -126,8 +137,9 @@ describe("Facility", function () {
       //Facility should be full yet
       expect(await facility.isFacilityFull()).to.be.true;
 
-      //Do exit by person1
-      await facility.connect(person1).doExit(person1.address);
+      //Do exit by person1- expect DoorOpened event 
+      await expect(facility.connect(person1).doExit())
+        .to.emit(facility, "DoorOpened");
 
       //Facility should not be full and person1 should not be inside
       expect(await facility.isFacilityFull()).to.be.false;
@@ -152,7 +164,7 @@ describe("Facility", function () {
       await facility.connect(firstGuard).approveExit(person1.address);
 
       //Try exit by person1 
-      await expect(facility.connect(person1).doExit(person1.address)).to.be.revertedWith("Both guards must approve");
+      await expect(facility.connect(person1).doExit()).to.be.revertedWith("Both guards must approve");
 
       //Check number of members in facility
       expect(await facility.isFacilityFull()).to.be.true;
@@ -185,7 +197,7 @@ describe("Facility", function () {
       await facility.connect(firstGuard).requestExit();
       await facility.connect(newGuard1).approveExit(firstGuard.address);
       await facility.connect(secondGuard).approveExit(firstGuard.address);
-      await facility.connect(firstGuard).doExit(firstGuard.address);
+      await facility.connect(firstGuard).doExit();
 
       expect(await facility.isFirstGuardChanged()).to.be.true;
 
@@ -206,7 +218,7 @@ describe("Facility", function () {
       await facility.connect(secondGuard).requestExit();
       await facility.connect(newGuard1).approveExit(secondGuard.address);
       await facility.connect(newGuard2).approveExit(secondGuard.address);
-      await facility.connect(secondGuard).doExit(secondGuard.address);
+      await facility.connect(secondGuard).doExit();
 
       expect(await facility.isChangingGuard()).to.be.false;
     });
@@ -252,14 +264,14 @@ describe("Facility", function () {
       await facility.connect(firstGuard).requestExit();
       await facility.connect(newGuard1).approveExit(firstGuard.address);
       await facility.connect(secondGuard).approveExit(firstGuard.address);
-      await facility.connect(firstGuard).doExit(firstGuard.address);
+      await facility.connect(firstGuard).doExit();
 
       //Person1 entry should be reverted because the facility is changing guard
       await expect(facility.connect(person1).doEnter()).to.be.revertedWith("Only new guards can enter during guard change");
     });
 
     it("Should only guard on duty begin changing guard", async function () {
-      const { facility,firstGuard, person1, newGuard1, newGuard2 } = await loadFixture(deployFacilityFixture);
+      const { facility, firstGuard, person1, newGuard1, newGuard2 } = await loadFixture(deployFacilityFixture);
 
       //person1, newGuard1 tries to begin changing guard - should be reverted
       await expect(facility.connect(person1).beginChangingGuard(newGuard1.address, newGuard2.address)).to.be.revertedWith("Only guards can call this function");

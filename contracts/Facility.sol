@@ -31,6 +31,8 @@ contract Facility {
 
     mapping(address => Request) public requests;
 
+    event DoorOpened(); //Esemény, ha az ajtó kinyilik
+
     constructor(address _firstGuard, address _secondGuard) {
         firstGuard = _firstGuard;
         secondGuard = _secondGuard;
@@ -112,7 +114,8 @@ contract Facility {
         }
 
         isDoorOpen = true;
-        membersInside.push(msg.sender);
+        emit DoorOpened();
+        membersInside.push(msg.sender); 
         isDoorOpen = false;
         delete requests[msg.sender];
 
@@ -144,7 +147,7 @@ contract Facility {
     }
 
     //Kilépés végrehajtása, ha az ember bent van és mindkét őr jóváhagyta
-    function doExit(address member) external approved onlyMembersInside {
+    function doExit() external approved onlyMembersInside {
         if (isChangingGuard) {
             require(
                 getGuardChange(msg.sender).newGuard != msg.sender,
@@ -153,12 +156,13 @@ contract Facility {
         }
 
         isDoorOpen = true;
-        removeFromMembersInside(member);
+        emit DoorOpened();
+        removeFromMembersInside(msg.sender);
         isDoorOpen = false;
-        delete requests[member];
+        delete requests[msg.sender];
         string memory message = string.concat(
             "Exited: ",
-            toAsciiString(member)
+            toAsciiString(msg.sender)
         );
 
         if (isChangingGuard) {
