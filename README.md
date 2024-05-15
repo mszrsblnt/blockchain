@@ -2,7 +2,7 @@
 
 ### Feladatleírás
 ---
-Egy magas biztonsági létesítmény mindig két katonát igényel egy műszakban. Emellett rendszeres hozzáférést kell biztosítania alacsony biztonsági szintű engedélyekkel rendelkező személyeknek (ételkiszállítás, takarítás stb.). Az összes belépést és kilépést nyomon kell követni és engedélyezni egy elosztott könyvelési rendszer által (a főbejáraton egy elektronikus zár folyamatosan figyeli a könyvet és eldönti, hogy nyitva vagy zárva kell-e lennie; kérések és engedélyezések okos kártyákkal és elektronikus terminálokkal támogatottak).
+Egy magas biztonságú létesítmény mindig két katonát igényel egy műszakban. Emellett rendszeres hozzáférést kell biztosítania alacsony biztonsági szintű engedélyekkel rendelkező személyeknek (ételkiszállítás, takarítás stb.). Az összes belépést és kilépést nyomon kell követni és engedélyezni egy elosztott könyvelési rendszer által (a főbejáraton egy elektronikus zár folyamatosan figyeli a könyvet és eldönti, hogy nyitva vagy zárva kell-e lennie; kérések és engedélyezések okos kártyákkal és elektronikus terminálokkal támogatottak).
 
 1. A belépést kívülről kérni kell, és mindkét ügyeletes katonának jóvá kell hagyja.
 2. A sikeres belépést belsőleg naplózni kell a belépő fél által (miután az ajtót bezárták).
@@ -396,3 +396,31 @@ modifier onlyMembersOutside()
     - Az **'npx hardhat compile'** parancs segítségével építse fel a szerződést. 
     - Futtassa a teszteket a **'npx hardhat test'** paranccsal.
     - Ellenőrizze a tesztek kimenetét és bizonyosodjon meg róla, hogy minden teszteset sikeresen lefutott.
+
+### Útmutató a projekt futtatásához
+---
+
+1. **Projekt klónozása és telepítése**
+    - Klónozza le a projektet a GitHub tárolóból.
+    - Telepítse a szükséges függőségeket a **'npm install'** paranccsal.
+
+2. **Fejlesztői hálózat indítása**
+    - Indítson el egy helyi fejlesztői hálózatot a **'npx hardhat node'** parancs segítségével.
+
+3. **Projekt futtatása Remixben**
+    - Nyissa meg a [Remix IDE](https://remix.ethereum.org/) felületét.
+    - A Remixben klónozza a GitHub tárolóból az okos szerződést.
+    - Fordítsa le a szerződést a Remix beépített fordítójával.
+
+4. **Telepítés és futtatás**
+    - A Remixben lépjen a "Deploy & Run Transactions" menübe.
+    - Válassza ki a **'Dev - Hardhat Provider'** opciót a környezet kiválasztásához.
+    - Adja meg a szükséges címeket a konstruktorban "Deploy" résznél.
+    - A "Transact" gomb megnyomása után már használhatja is a szerződést.
+
+5. **Ellenőrzés**
+    - Győződjön meg róla, hogy a szerződés megfelelően működik a telepítés után.
+    - Az alábbi képeken láthatja, milyen beállításokat kell látnia a sikeres telepítés után:
+
+    ![remix](remix.png)
+    ![remix1](remix1.png)
