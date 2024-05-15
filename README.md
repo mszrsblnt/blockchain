@@ -17,8 +17,6 @@ Egy magas biztonsági létesítmény mindig két katonát igényel egy műszakba
 - Ágota Benedek [WFXBHI]
 - Mészáros Bálint [B3SWVC]
 
-
-<<<<<<< HEAD
 ### Tervezési döntések
 A tervezés során az alábbi döntéseket hoztuk meg:
 
@@ -69,9 +67,6 @@ A smart contract az alábbi adatmodellt használja:
 13.  `mapping(address => Request) public requests;`: Ez egy nyilvános mapping, amely a kérelmeket tárolja az adott címhez rendelve.
 
 ### Függvények - API
-=======
-### Függvények
->>>>>>> bb73c7210d74a9fc35171f5a3b60431b20b85c75
 
 #### Konstruktor (`constructor`)
 
@@ -302,11 +297,6 @@ modifier onlyMembersOutside()
 
 ### Tesztek
 
-<<<<<<< HEAD
-A smart contract-hez számos tesztet írtak, amelyek lefedik a különböző működési lehetőségeket és körülményeket. Ezeket a teszteket TypeScipt nyelven írtuk meg.
-
-=======
->>>>>>> bb73c7210d74a9fc35171f5a3b60431b20b85c75
 #### Deployment
 
 1. **Helyes kezdőértékek beállítása**
@@ -375,8 +365,7 @@ A smart contract-hez számos tesztet írtak, amelyek lefedik a különböző mű
 4. **Csak szolgálatban levő őr kezdeményezhet őrváltást**
    - Leírás: Ellenőrzi, hogy csak az őrök kezdeményezhetik-e az őrváltást.
    - Elvárt viselkedés:
-<<<<<<< HEAD
-     - Az őrváltás csak az őrszolgálatban levő őrök által kezdeményezhető.
+     - Őrváltás csak az őrszolgálatban levő őrök által kezdeményezhető.
 
 ### Útmutató a tesztek futtatásához
 
@@ -388,6 +377,3 @@ A smart contract-hez számos tesztet írtak, amelyek lefedik a különböző mű
     - Az **'npx hardhat compile'** parancs segítségével építse fel a szerződést. 
     - Futtassa a teszteket a **'npx hardhat test'** paranccsal.
     - Ellenőrizze a tesztek kimenetét és bizonyosodjon meg róla, hogy minden teszteset sikeresen lefutott.
-=======
-     - Őrváltás csak az őrszolgálatban levő őrök által kezdeményezhető.
->>>>>>> bb73c7210d74a9fc35171f5a3b60431b20b85c75
