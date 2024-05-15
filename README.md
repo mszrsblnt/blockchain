@@ -18,7 +18,56 @@ A magas biztonsági létesítmény mindig két katona váltását biztosítja. R
 - Mészáros Bálint [B3SWVC]
 
 
-### Funkciók
+### Tervezési döntések
+A tervezés során az alábbi döntéseket hoztuk meg:
+
+- max létszám őrőkkel egyutt 3
+- ajtonyitas es zaras egy fuggvenyen belul, eventet kuld
+- 
+
+1.  **Mindig két őr szükséges:** A létesítmény létrehozásához alapból két őr szükséges.
+    
+2.  **Belépési/kilépési kérelmek és jóváhagyások:** A belépési és kilépési folyamatok szabályozásához kérelmeket használunk, amelyeket mindkét őrnek jóvá kell hagynia a művelet végrehajtásához.
+    
+3.  **Őrváltás két fázisban:** Az őrváltás két lépésben történik, hogy biztosítsuk, hogy mindig legalább egy őr a létesítményben maradjon.
+    
+4.  **Naplózás:** Minden belépési és kilépési eseményt naplózunk, hogy vissza lehessen követni a történéseket és biztosítsuk a felelősségvállalást. 
+
+### Adatmodel
+A smart contract az alábbi adatmodellt használja:
+1.  `uint public constant MAX_INSIDE = 3;`: Nyilvános, konstans egész típusú változó, amely a maximális létesítményben tartózkodó személyek számát tárolja. A könnyű módosíthatóság és átláthatóság miatt lett kiszervezve.
+    
+2.  `string[] private logs;`: Privát string tömb, amelyben tároljuk a belépési és kilépési eseményeket.
+    
+3.  `bool public isDoorOpen;`: Publikus logikai változó, amely jelzi, hogy az ajtó nyitva vagy zárva van-e.
+    
+4.  `address public firstGuard;`: Publikus address típusú változó, amely tárolja az első őr címét.
+    
+5.  `address public secondGuard;`: Publikus address típusú változó, amely tárolja a második őr címét.
+    
+6.  `address[] public membersInside;`: Publikus address tömb, amelyben tároljuk a létesítményben tartózkodó tagok címeit. (Beleértve a két őr címét is.)
+    
+7.  `bool public isChangingGuard;`: Publikus logikai változó, amely jelzi, hogy az őrváltás folyamatban van-e.
+    
+8.  `bool public isFirstGuardChanged;`: Publikus logikai változó, amely jelzi, hogy az első őr már le lett-e cserélve.
+    
+9.  `struct GuardChange { ... }`: Ez egy struktúra, amely az őrváltásokat tárolja.
+      - `address newGuard`: Az új őr címe.
+      - `bool newGuardAcknowledged`: Jelenlegi őr elismerte-e az őrváltást.
+      - `bool currentGuardAcknowledged`: Új őr elismerte-e az őrváltást.
+    
+10.  `mapping(address => uint) private guardChangesMapping;`: Ez egy privát mapping, amely az őrváltások indexeit tárolja az adott címhez rendelve.
+    
+11.  `GuardChange[2] private guardChanges;`: Ez egy privát GuardChange típusú tömb, amelyben tároljuk az őrváltásokat.
+    
+12.  `struct Request { ... }`: Ez egy struktúra, amely a belépési és kilépési kérelmeket tárolja.
+      - `bool isEnter`: Belépésre vonatkozik-e.
+      - `bool firstGuardApproved`: Első őr jóváhagyta-e már a kérelmet.
+      - `bool secondGuardApproved`: Második őr jóváhagyta-e már a kérelmet.
+    
+13.  `mapping(address => Request) public requests;`: Ez egy nyilvános mapping, amely a kérelmeket tárolja az adott címhez rendelve.
+
+### Függvények - API
 
 #### Konstruktor (`constructor`)
 
@@ -49,7 +98,7 @@ function approveEnter(address member) external onlyGuard
 ```
 
 - Paraméter:
-  - `member`: A belépési kérelmet beküldő cím.
+  - `member`: Az a cím, akinek jóvá akarjuk hagyni a belépését.
 - Feladat:
   - Jóváhagyja a belépést az adott tag számára.
 
@@ -62,6 +111,7 @@ function doEnter() external approved onlyMembersOutside
 - Feladat:
   - Engedélyezi a belépést, ha a kérelmet beküldő tag bent van, és mindkét őr jóváhagyta.
   - Naplózza a belépést.
+  - DoorOpen eventet küld.
 
 #### Kilépési kérelem (`requestExit`)
 
@@ -94,6 +144,7 @@ function doExit(address member) external approved onlyMembersInside
 - Feladat:
   - Engedélyezi a kilépést, ha a tag bent van, és mindkét őr jóváhagyta.
   - Naplózza a kilépést.
+  - DoorOpen eventet küld.
 
 #### Őrváltás kezdeményezése (`beginChangingGuard`)
 
@@ -210,7 +261,7 @@ modifier onlyMembersOutside() {
 
 ### Tesztek
 
-A smart contract-hez számos tesztet írtak, amelyek lefedik a különböző működési lehetőségeket és körülményeket.
+A smart contract-hez számos tesztet írtak, amelyek lefedik a különböző működési lehetőségeket és körülményeket. Ezeket a teszteket TypeScipt nyelven írtuk meg.
 
 #### Deployment
 
@@ -281,3 +332,14 @@ A smart contract-hez számos tesztet írtak, amelyek lefedik a különböző mű
    - Leírás: Ellenőrzi, hogy csak az őrök kezdeményezhetik-e az őrváltást.
    - Elvárt viselkedés:
      - Az őrváltás csak az őrszolgálatban levő őrök által kezdeményezhető.
+
+### Útmutató a tesztek futtatásához
+
+1. **Függőségek telepítése**
+    - Klónozza le a projektet a GitHub tárolóból.
+    - Telepítse a szükséges függőségeket a **'npm install'** paranccsal.
+
+2. **Tesztek futtatása**
+    - Az **'npx hardhat compile'** parancs segítségével építse fel a szerződést. 
+    - Futtassa a teszteket a **'npx hardhat test'** paranccsal.
+    - Ellenőrizze a tesztek kimenetét és bizonyosodjon meg róla, hogy minden teszteset sikeresen lefutott.
